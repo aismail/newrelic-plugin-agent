@@ -46,12 +46,22 @@ class Kestrel(base.Plugin):
         LOGGER.info('Polling complete in %.2f seconds',
                     time.time() - start_time)
 
+    def _units(self, name):
+        if '/' in name:
+            tokens = name.split('/')
+            return tokens[-1]
+        return 'items'
+
     def _parse_kestrel_stats(self, kestrel_stats):
 
         gauges = kestrel_stats.get('gauges', {})
         for gauge_name, gauge_value in gauges.iteritems():
-            self.add_gauge_value(gauge_name, gauge_name, gauge_value)
+            self.add_gauge_value(gauge_name,
+                                 self._units(gauge_name),
+                                 gauge_value)
 
         counters = kestrel_stats.get('counters', {})
         for counter_name, counter_value in counters.iteritems():
-            self.add_derive_value(counter_name, counter_name, counter_value)
+            self.add_derive_value(counter_name,
+                                  self._units(counter_name),
+                                  counter_value)
