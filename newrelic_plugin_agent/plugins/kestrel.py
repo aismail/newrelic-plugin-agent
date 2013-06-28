@@ -29,25 +29,29 @@ class Kestrel(base.Plugin):
         LOGGER.info('Polling Kestrel')
         start_time = time.time()
 
-        for server in self.config:
-            host = server.get('host', self.DEFAULT_HOST)
-            admin_port = int(server.get('port', self.DEFAULT_ADMIN_PORT))
+        host = self.config.get('host', self.DEFAULT_HOST)
+        admin_port = int(self.config.get('port', self.DEFAULT_ADMIN_PORT))
 
-            # Fetch kestrel stats from HTTP endpoint of Kestrel admin server
-            url = 'http://%s:%d/stats.json' % (host, admin_port)
-            try:
-                kestrel_stats = self.requests.get(url).json
-            except:
-                LOGGER.exception("Failed to get Kestrel stats from %s" % url)
+        # Fetch kestrel stats from HTTP endpoint of Kestrel admin server
+        url = 'http://%s:%d/stats.json' % (host, admin_port)
+        try:
+            kestrel_stats = requests.get(url).json()
+        except:
+            LOGGER.exception("Failed to get Kestrel stats from %s" % url)
+            return
 
-            self._parse_kestrel_stats(kestrel_stats)
+        self._parse_kestrel_stats(kestrel_stats)
 
         # Create all of the metrics
         LOGGER.info('Polling complete in %.2f seconds',
                     time.time() - start_time)
 
     def _parse_kestrel_stats(self, kestrel_stats):
+
         gauges = kestrel_stats.get('gauges', {})
         for gauge_name, gauge_value in gauges.iteritems():
-            if gauge_name.startswith('q/') and gauge_name.endswith('/items'):
-                self.add_gauge_value(gauge_name, 'items', int(gauge_value))
+            self.add_gauge_value(gauge_name, gauge_name, gauge_value)
+
+        counters = kestrel_stats.get('counters', {})
+        for counter_name, counter_value in counters.iteritems():
+            self.add_derive_value(counter_name, counter_name, counter_value)
