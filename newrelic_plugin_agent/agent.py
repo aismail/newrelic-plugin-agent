@@ -256,6 +256,12 @@ class NewRelicPluginAgent(clihelper.Controller):
                 self.poll_plugin(plugin, redis.Redis,
                                  self.application_config.get(plugin))
 
+            elif plugin == 'kestrel':
+                if 'kestrel' not in globals():
+                    from newrelic_plugin_agent.plugins import kestrel
+                self.poll_plugin(plugin, kestrel.Kestrel,
+                                 self.application_config.get(plugin))
+
             elif plugin == 'riak':
                 if 'riak' not in globals():
                     from newrelic_plugin_agent.plugins import riak
