@@ -52,16 +52,21 @@ class Kestrel(base.Plugin):
             return tokens[-1]
         return 'items'
 
+    def _metric(self, name):
+        if '/' in name:
+            tokens = name.split('/')
+            return '/'.join(tokens[:-1])
+
     def _parse_kestrel_stats(self, kestrel_stats):
 
         gauges = kestrel_stats.get('gauges', {})
         for gauge_name, gauge_value in gauges.iteritems():
-            self.add_gauge_value(gauge_name,
+            self.add_gauge_value(self._metric(gauge_name),
                                  self._units(gauge_name),
                                  gauge_value)
 
         counters = kestrel_stats.get('counters', {})
         for counter_name, counter_value in counters.iteritems():
-            self.add_derive_value(counter_name,
+            self.add_derive_value(self._metric(counter_name),
                                   self._units(counter_name),
                                   counter_value)
