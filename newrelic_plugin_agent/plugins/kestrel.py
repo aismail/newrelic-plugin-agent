@@ -63,10 +63,10 @@ class Kestrel(base.Plugin):
         for gauge_name, gauge_value in gauges.iteritems():
             self.add_gauge_value(self._metric(gauge_name),
                                  self._units(gauge_name),
-                                 gauge_value)
+                                 int(gauge_value))
 
         counters = kestrel_stats.get('counters', {})
         for counter_name, counter_value in counters.iteritems():
             self.add_derive_value(self._metric(counter_name),
                                   self._units(counter_name),
-                                  counter_value)
+                                  int(counter_value))
